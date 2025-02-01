@@ -1,3 +1,13 @@
+# This is personal fork
+Added features
+- option for status bar - its off by default
+```bash
+set -g @floax-status 'on' 
+```
+- automatic cd does not work when given a custom session name so did a simlpe fix
+  - The session name for cd was hardcoded so changed it to a variable
+
+
 FloaX - Floating panes in Tmux!
 ============
 
