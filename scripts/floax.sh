@@ -26,7 +26,7 @@ else
     else
         # Create a new session named 'scratch' and attach to it
         tmux new-session -d -c "$(tmux display-message -p '#{pane_current_path}')" -s "$FLOAX_SESSION_NAME"
-        tmux set-option -t "$FLOAX_SESSION_NAME" status off
+        tmux set-option -t "$FLOAX_SESSION_NAME" status on
         tmux_popup
     fi
 fi
