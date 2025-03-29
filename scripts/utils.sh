@@ -21,7 +21,7 @@ CURRENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FLOAX_CHANGE_PATH=$(envvar_value FLOAX_CHANGE_PATH)
 FLOAX_TITLE=$(envvar_value FLOAX_TITLE)
 FLOAX_STATUS=$(envvar_value FLOAX_STATUS)
-DEFAULT_TITLE='FloaX: C-M-s 󰘕   C-M-b 󰁌   C-M-f 󰊓   C-M-r 󰑓   C-M-e 󱂬   C-M-d '
+DEFAULT_TITLE='FloaX: C-M-s 󰘕   C-M-b 󰁌   C-M-f 󰊓   C-M-r 󰑓   C-M-e 󱂬   C-M-d  / C-M-c 󰓡 '
 FLOAX_SESSION_NAME=$(envvar_value FLOAX_SESSION_NAME)
 DEFAULT_SESSION_NAME='scratch'
 
@@ -33,6 +33,7 @@ set_bindings() {
     tmux bind -n C-M-e run "$CURRENT_DIR/embed.sh embed"
     tmux bind -n C-M-d run "$CURRENT_DIR/zoom-options.sh lock" 
     tmux bind -n C-M-u run "$CURRENT_DIR/zoom-options.sh unlock"
+    tmux bind -n C-M-c run "$CURRENT_DIR/utils.sh path"
 }
 
 unset_bindings() {
@@ -43,6 +44,7 @@ unset_bindings() {
     tmux unbind -n C-M-e 
     tmux unbind -n C-M-d 
     tmux unbind -n C-M-u 
+    tmux unbind -n C-M-c 
 }
 
 tmux_version() {
@@ -66,13 +68,21 @@ is_tmux_version_supported() {
     return 1
 }
 
-tmux_popup() {
-    # TODO: make this optional:
-    current_dir=$(tmux display -p '#{pane_current_path}')
+change_path() {
+    current_dir=$(tmux showenv -g "current_dir" | cut -d '=' -f 2-)
     scratch_path=$(tmux display -t $FLOAX_SESSION_NAME -p '#{pane_current_path}')
-    if [ "$scratch_path" != "$current_dir" ] && [ "$FLOAX_CHANGE_PATH" = "true" ]; then
+    if [ "$scratch_path" != "$current_dir" ]; then
         tmux send-keys -R -t "$FLOAX_SESSION_NAME" " cd $current_dir" C-m
     fi
+}
+
+tmux_popup() {
+    # TODO: make this optional:
+    # current_dir=$(tmux display -p '#{pane_current_path}')
+    # scratch_path=$(tmux display -t $FLOAX_SESSION_NAME -p '#{pane_current_path}')
+    # if [ "$scratch_path" != "$current_dir" ] && [ "$FLOAX_CHANGE_PATH" = "true" ]; then
+    #     tmux send-keys -R -t "$FLOAX_SESSION_NAME" " cd $current_dir" C-m
+    # fi
 
     if is_tmux_version_supported; then
         if ! pop; then
@@ -102,6 +112,7 @@ pop() {
     fi
 
     tmux set-option -t "$FLOAX_SESSION_NAME" detach-on-destroy on
+    tmux setenv -g current_dir $(tmux display -p '#{pane_current_path}')
     tmux popup \
         -S fg="$FLOAX_BORDER_COLOR" \
         -s fg="$FLOAX_TEXT_COLOR" \
@@ -112,3 +123,9 @@ pop() {
         -E \
         "tmux attach-session -t \"$FLOAX_SESSION_NAME\"" 
 }
+
+case "$1" in
+    path)
+        change_path
+        ;;
+esac
